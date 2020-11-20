@@ -85,15 +85,28 @@ public class WebServer {
 					String[] requestParam = str.split(" ");
 
 					String path = requestParam[1];
-					File fichier = new File(path);
+					File fichier = new File(path.substring(1));
 
 
 					if ( !fichier.exists()) {
-
-						out.write ("HTTP 404"); // la page demandée n'existe pas
+						// Send the headers
+						out.println("HTTP/1.0 200 OK");
+						out.println("Content-Type: text/html");
+						out.println("Server: Bot");
+						// this blank line signals the end of the headers
+						out.println("");
+						// Send the HTML page
+						out.println("<H1>Welcome to the Ultra Mini-WebServer</H2>");
+						out.flush();
+	//					out.write ("HTTP 404"); // la page demandée n'existe pas
 					}
 					else {
-
+						// Send the headers
+						out.println("HTTP/1.0 200 OK");
+						out.println("Content-Type: text/html");
+						out.println("Server: Bot");
+						// this blank line signals the end of the headers
+						out.println("");
 						FileReader lecteurFichier = new FileReader(fichier);
 						BufferedReader lectureFichier = new BufferedReader(lecteurFichier);
 						String line;
@@ -105,16 +118,9 @@ public class WebServer {
 							System.out.println("line :");
 							System.out.println(line);
 							out.write(line);
+							out.write("\n");
 						}
 						lectureFichier.close();
-						// Send the headers
-						out.println("HTTP/1.0 200 OK");
-						out.println("Content-Type: text/html");
-						out.println("Server: Bot");
-						// this blank line signals the end of the headers
-						out.println("");
-						// Send the HTML page
-						out.println("<H1>Welcome to the Ultra Mini-WebServer</H2>");
 						out.flush();
 					}
 
