@@ -3,12 +3,9 @@
 package http.server;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -69,63 +66,63 @@ public class WebServer {
 					try {
 
 						System.out.println("str avant readline :");
-						System.out.println(str);
 
 						str = in.readLine();
 
 						System.out.println("str après readline :");
-						System.out.println(str);
 
 					}
 					catch(Exception e) {
 						e.printStackTrace();
 					}
+					
+					HandleRequest handler = new HandleRequest(str, out);
+					handler.handle();
+//					String[] requestParam = str.split(" ");
+//
+//					String path = requestParam[1];
+//					File fichier = new File(path.substring(1));
+//
+//
+//					if ( !fichier.exists()) {
+//						// Send the headers
+//						out.println("HTTP/1.0 404 FILE NOT FOUND");
+//						out.println("Content-Type: text/html");
+//						out.println("Server: Bot");
+//						// this blank line signals the end of the headers
+//						out.println("");
+//						// Send the HTML page
+//						out.println("<H1>HTTP 404 : FILE NOT FOUND</H2>");
+//						out.flush();
+//	//					out.write ("HTTP 404"); // la page demandée n'existe pas
+//					}
+//					else {
+//						// Send the headers
+//						out.println("HTTP/1.0 200 OK");
+//						out.println("Content-Type: text/html");
+//						out.println("Server: Bot");
+//						// this blank line signals the end of the headers
+//						out.println("");
+//						FileReader lecteurFichier = new FileReader(fichier);
+//						BufferedReader lectureFichier = new BufferedReader(lecteurFichier);
+//						String line;
+//						while(true) {
+//							line = lectureFichier.readLine();
+//							if (line == null) {
+//								break;
+//							}
+//							System.out.println("line :");
+//							System.out.println(line);
+//							out.write(line);
+//							out.write("\n");
+//						}
+//						lectureFichier.close();
+//						out.flush();
+//					}
 
-
-					String[] requestParam = str.split(" ");
-
-					String path = requestParam[1];
-					File fichier = new File(path.substring(1));
-
-
-					if ( !fichier.exists()) {
-						// Send the headers
-						out.println("HTTP/1.0 200 OK");
-						out.println("Content-Type: text/html");
-						out.println("Server: Bot");
-						// this blank line signals the end of the headers
-						out.println("");
-						// Send the HTML page
-						out.println("<H1>Welcome to the Ultra Mini-WebServer</H2>");
-						out.flush();
-	//					out.write ("HTTP 404"); // la page demandée n'existe pas
-					}
-					else {
-						// Send the headers
-						out.println("HTTP/1.0 200 OK");
-						out.println("Content-Type: text/html");
-						out.println("Server: Bot");
-						// this blank line signals the end of the headers
-						out.println("");
-						FileReader lecteurFichier = new FileReader(fichier);
-						BufferedReader lectureFichier = new BufferedReader(lecteurFichier);
-						String line;
-						while(true) {
-							line = lectureFichier.readLine();
-							if (line == null) {
-								break;
-							}
-							System.out.println("line :");
-							System.out.println(line);
-							out.write(line);
-							out.write("\n");
-						}
-						lectureFichier.close();
-						out.flush();
-					}
-
-
-
+					str = "";
+					in.close();
+					out.close();
 					remote.close();
 				}
 			} catch (Exception e) {
