@@ -1,22 +1,13 @@
 package http.server;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-
-import javax.imageio.ImageIO;
-
-import com.sun.tools.javac.util.ByteBuffer;
 
 public class HandleRequest {
 
@@ -70,50 +61,25 @@ public class HandleRequest {
 				int extensionIndex = fichier.getName().lastIndexOf(".");
 				String extension = fichier.getName().substring(extensionIndex);
 				System.out.println(extension);
-				out.println("HTTP/1.0 200 OK");
-				if(extension.equalsIgnoreCase(".png") || extension.equalsIgnoreCase(".jpg")) {
-					try {
-						InputStream is = new BufferedInputStream(new FileInputStream(fichier));
-						DataOutputStream dos = new DataOutputStream(socketOutputStream);
-						dos.writeLong(fichier.length()); // <-- remember to read a long on server.
-						int val;
-						while ((val = is.read()) != -1) {
-							dos.write(val);
-						}
-						dos.flush();
-					} catch (IOException e1) {
-						e1.printStackTrace();
 
-					}
+				if(extension.equalsIgnoreCase(".png") || extension.equalsIgnoreCase(".jpg")) {
 					out.println("HTTP/1.0 200 OK");
-					out.println("Content-Type: image/png");
+					//out.println("Content-Type: image/png");
+					out.println("Content-Length: " + fichier.length());
 					out.println("Server: Bot");
 					// this blank line signals the end of the headers
 					out.println("");
-					FileReader lecteurFichier;
+					out.flush();
 					try {
-						lecteurFichier = new FileReader(fichier);
-						BufferedReader lectureFichier = new BufferedReader(lecteurFichier);
-						String line;
-						while(true) {
-							try {
-								line = lectureFichier.readLine();
-								if (line == null) {
-									lectureFichier.close();
-									break;
-								}
-								//								System.out.println("line :");
-								//								System.out.println(line);
-								out.write(line);
-								out.write("\n");
+						FileInputStream is = new FileInputStream(fichier);
+						byte[] buffer = new byte[(int)fichier.length()];
+						is.read(buffer);
 
-								out.flush();
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-						}
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
+						socketOutputStream.write(buffer);
+						is.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+
 					}
 				} else {
 					out.println("HTTP/1.0 200 OK");
