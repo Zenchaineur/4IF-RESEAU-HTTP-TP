@@ -60,23 +60,23 @@ public class WebServer {
 
 				String str = "GET index.html HTTP/1.1";
 
-				while (str != null && !str.equals("")) 
+				while (str != null) 
 				{
 
 					try {
 
-						System.out.println("str avant readline :");
+//						System.out.println("str avant readline :");
 
 						str = in.readLine();
 
-						System.out.println("str après readline :");
+						System.out.println("str après readline : " + str);
 
 					}
 					catch(Exception e) {
 						e.printStackTrace();
 					}
 					
-					HandleRequest handler = new HandleRequest(str, out);
+					HandleRequest handler = new HandleRequest(str, out, in, socketOutputStream);
 					handler.handle();
 //					String[] requestParam = str.split(" ");
 //
@@ -120,11 +120,12 @@ public class WebServer {
 //						out.flush();
 //					}
 
-					str = "";
+					str = null;
 					in.close();
 					out.close();
 					remote.close();
 				}
+				
 			} catch (Exception e) {
 				System.out.println("Error: " + e);
 			}
