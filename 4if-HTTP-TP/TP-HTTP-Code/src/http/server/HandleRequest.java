@@ -8,16 +8,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.Socket;
 
 public class HandleRequest {
 
+	private Socket remote;
 	private String request;
 	private PrintWriter out;
 	private BufferedReader in;
 	private OutputStream socketOutputStream;
 
 
-	public HandleRequest(String request, PrintWriter out, BufferedReader in, OutputStream socketOutputStream) {
+	public HandleRequest(Socket remote, String request, PrintWriter out, BufferedReader in, OutputStream socketOutputStream) {
+		this.remote = remote;
 		this.request = request;
 		this.out = out;
 		this.in = in;
@@ -85,6 +88,7 @@ public class HandleRequest {
 						is.read(buffer);
 
 						socketOutputStream.write(buffer);
+						socketOutputStream.flush();
 						is.close();
 					} catch (IOException e1) {
 						e1.printStackTrace();
@@ -104,13 +108,14 @@ public class HandleRequest {
 						is.read(buffer);
 
 						socketOutputStream.write(buffer);
+						socketOutputStream.flush();
 						is.close();
 					} catch (IOException e1) {
 						e1.printStackTrace();
 
 					}
 				} else {
-				
+
 					out.println("HTTP/1.0 200 OK");
 					out.println("Content-Type: text/html");
 					out.println("Server: Bot");
@@ -267,6 +272,14 @@ public class HandleRequest {
 				if(extension.equalsIgnoreCase(".png") || extension.equalsIgnoreCase(".jpg")) {
 					out.println("HTTP/1.0 200 OK");
 					out.println("Content-Type: image/" + extension.substring(1));
+					out.println("Content-Length: " + fichier.length());
+					out.println("Server: Bot");
+					// this blank line signals the end of the headers
+					out.println("");
+					out.flush();
+				} else if(extension.equalsIgnoreCase(".mp4")) {
+					out.println("HTTP/1.0 200 OK");
+					out.println("Content-Type: video/mp4");
 					out.println("Content-Length: " + fichier.length());
 					out.println("Server: Bot");
 					// this blank line signals the end of the headers

@@ -28,7 +28,7 @@ public class WebServer {
 	protected void start() {
 		ServerSocket s;
 
-		System.out.println("Webserver starting up on port 80");
+		System.out.println("Webserver starting up on port 3000");
 		System.out.println("(press ctrl-c to exit)");
 		try {
 			// create the main server socket
@@ -73,7 +73,7 @@ public class WebServer {
 					e.printStackTrace();
 				}
 
-				HandleRequest handler = new HandleRequest(str, out, in, socketOutputStream);
+				HandleRequest handler = new HandleRequest(remote, str, out, in, socketOutputStream);
 				handler.handle();
 				//					String[] requestParam = str.split(" ");
 				//
@@ -117,7 +117,6 @@ public class WebServer {
 				//						out.flush();
 				//					}
 
-				str = null;
 				in.close();
 				out.close();
 				remote.close();
