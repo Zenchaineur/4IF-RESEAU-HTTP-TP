@@ -55,6 +55,15 @@ public class HandleRequest {
 				out.println("<H1>HTTP 404 : FILE NOT FOUND</H1>");
 				out.flush();
 				//					out.write ("HTTP 404"); // la page demandée n'existe pas
+			} else if ( !fichier.canRead()) {
+				// Send the headers
+				out.println("HTTP/1.0 403 DO NOT HAVE THE PERMISSION");
+				out.println("Content-Type: text/html");
+				out.println("Server: Bot");
+				// this blank line signals the end of the headers
+				out.println("");
+				out.println("<H1>HTTP 403 : DO NOT HAVE THE PERMISSION TO READ THE FILE</H1>");
+				out.flush();
 			} else {
 				// Send the headers
 				System.out.println("FILE to read : " + fichier.getName());
@@ -64,7 +73,26 @@ public class HandleRequest {
 
 				if(extension.equalsIgnoreCase(".png") || extension.equalsIgnoreCase(".jpg")) {
 					out.println("HTTP/1.0 200 OK");
-					//out.println("Content-Type: image/png");
+					out.println("Content-Type: image/" + extension.substring(1));
+					out.println("Content-Length: " + fichier.length());
+					out.println("Server: Bot");
+					// this blank line signals the end of the headers
+					out.println("");
+					out.flush();
+					try {
+						FileInputStream is = new FileInputStream(fichier);
+						byte[] buffer = new byte[(int)fichier.length()];
+						is.read(buffer);
+
+						socketOutputStream.write(buffer);
+						is.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+
+					}
+				} else if(extension.equalsIgnoreCase(".mp4")) {
+					out.println("HTTP/1.0 200 OK");
+					out.println("Content-Type: video/mp4");
 					out.println("Content-Length: " + fichier.length());
 					out.println("Server: Bot");
 					// this blank line signals the end of the headers
@@ -82,6 +110,7 @@ public class HandleRequest {
 
 					}
 				} else {
+				
 					out.println("HTTP/1.0 200 OK");
 					out.println("Content-Type: text/html");
 					out.println("Server: Bot");
@@ -201,6 +230,70 @@ public class HandleRequest {
 			//				out.println("<H1>Fichier " + fichier.getName() +" supprimé</H1>");
 			//				out.flush();
 			//			}
+			break;
+		}
+		case "HEAD": {
+			System.out.println("HEAD called");
+			String path = requestParam[1];
+			File fichier = new File(path.substring(1));
+			if(path.equals("/")) {
+				out.println("HTTP/1.0 200 OK");
+				out.println("Content-Type: text/html");
+				out.println("Server: Bot");
+				// this blank line signals the end of the headers
+				out.println("");
+				out.flush();
+			} else if ( !fichier.exists()) {
+				// Send the headers
+				out.println("HTTP/1.0 404 FILE NOT FOUND");
+				out.println("Content-Type: text/html");
+				out.println("Server: Bot");
+				// this blank line signals the end of the headers
+				out.println("");
+				out.flush();
+			} else if ( !fichier.canRead()) {
+				// Send the headers
+				out.println("HTTP/1.0 403 DO NOT HAVE THE PERMISSION");
+				out.println("Content-Type: text/html");
+				out.println("Server: Bot");
+				// this blank line signals the end of the headers
+				out.println("");
+				out.flush();
+			} else {
+				// Send the headers
+				int extensionIndex = fichier.getName().lastIndexOf(".");
+				String extension = fichier.getName().substring(extensionIndex);
+
+				if(extension.equalsIgnoreCase(".png") || extension.equalsIgnoreCase(".jpg")) {
+					out.println("HTTP/1.0 200 OK");
+					out.println("Content-Type: image/" + extension.substring(1));
+					out.println("Content-Length: " + fichier.length());
+					out.println("Server: Bot");
+					// this blank line signals the end of the headers
+					out.println("");
+					out.flush();
+				} else {
+					out.println("HTTP/1.0 200 OK");
+					out.println("Server: Bot");
+					out.println("Content-Length: " + fichier.length());
+					// this blank line signals the end of the headers
+					out.println("");
+					out.flush();
+				}
+			}
+			break;
+		}
+
+		case "TRACE": {
+			System.out.println("TRACE called");
+
+			out.println("HTTP/1.0 200 OK");
+			out.println("Content-Type: message/http");
+			out.println("Server: Bot");
+			// this blank line signals the end of the headers
+			out.println("");
+			out.println(request);
+			out.flush();
 			break;
 		}
 

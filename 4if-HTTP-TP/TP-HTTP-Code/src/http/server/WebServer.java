@@ -66,7 +66,7 @@ public class WebServer {
 
 					str = in.readLine();
 
-					System.out.println("str après readline : " + str);
+					System.out.println("Requete recu : " + str);
 
 				}
 				catch(Exception e) {
