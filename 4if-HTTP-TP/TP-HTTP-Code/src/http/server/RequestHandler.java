@@ -16,7 +16,7 @@ import java.io.PrintWriter;
  * @author Binome 1-8
  *
  */
-public class HandleRequest {
+public class RequestHandler {
 	private static final String RESSOURCES_FOLDER = "ressources/";
 
 	private String request;
@@ -27,13 +27,12 @@ public class HandleRequest {
 
 	/**
 	 * Constructeur
-	 * @param remote
-	 * @param request
-	 * @param out
-	 * @param in
-	 * @param socketOutputStream
+	 * @param request Chaine de caractère qui représente la requete reçue
+	 * @param out PrintWriter
+	 * @param in BufferedReader
+	 * @param socketOutputStream OutputStream
 	 */
-	public HandleRequest(String request, PrintWriter out, BufferedReader in, OutputStream socketOutputStream) {
+	public RequestHandler(String request, PrintWriter out, BufferedReader in, OutputStream socketOutputStream) {
 		this.request = request;
 		this.out = out;
 		this.in = in;
@@ -138,6 +137,26 @@ public class HandleRequest {
 						e1.printStackTrace();
 
 					}
+				} else if(extension.equalsIgnoreCase(".json")) {
+					out.println("HTTP/1.0 200 OK");
+					out.println("Content-Type: application/json");
+					out.println("Content-Length: " + fichier.length());
+					out.println("Server: Bot");
+					// this blank line signals the end of the headers
+					out.println("");
+					out.flush();
+					try {
+						FileInputStream is = new FileInputStream(fichier);
+						byte[] buffer = new byte[(int)fichier.length()];
+						is.read(buffer);
+
+						socketOutputStream.write(buffer);
+						socketOutputStream.flush();
+						is.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+
+					}
 				} else if(extension.equalsIgnoreCase(".py")) {
 					out.println("HTTP/1.0 200 OK");
 					out.println("Content-Type: text/plain");
@@ -160,7 +179,6 @@ public class HandleRequest {
 							}
 						}
 						
-						System.out.println("NUM " + num);
 						Process p = Runtime.getRuntime().exec("python " + RESSOURCES_FOLDER + "script.py " + num);
 						BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 						BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
@@ -170,13 +188,6 @@ public class HandleRequest {
 						while((s = stdError.readLine()) != null) {
 							out.println(s);
 						}
-						//						FileInputStream is = new FileInputStream(fichier);
-						//						byte[] buffer = new byte[(int)fichier.length()];
-						//						is.read(buffer);
-						//
-						//						socketOutputStream.write(buffer);
-						//						socketOutputStream.flush();
-						//						is.close();
 					} catch (IOException e1) {
 						e1.printStackTrace();
 
@@ -191,7 +202,7 @@ public class HandleRequest {
 					out.println("");
 					FileReader lecteurFichier;
 					try {
-						lecteurFichier = new FileReader(RESSOURCES_FOLDER + fichier);
+						lecteurFichier = new FileReader(fichier);
 						BufferedReader lectureFichier = new BufferedReader(lecteurFichier);
 						String line;
 						while(true) {
@@ -201,8 +212,6 @@ public class HandleRequest {
 									lectureFichier.close();
 									break;
 								}
-								//								System.out.println("line :");
-								//								System.out.println(line);
 								out.write(line);
 								out.write("\n");
 
@@ -248,6 +257,9 @@ public class HandleRequest {
 		}
 
 		case "POST": {
+			String path = requestParam[1];
+			System.out.println("PATH " + path);
+			
 			System.out.println("POST called");
 			String str = "empty";
 			String contentType = "";
@@ -282,31 +294,36 @@ public class HandleRequest {
 						in.read(buf, 0, contentLength);
 						System.out.println("BUF : " + String.valueOf(buf));
 
-						File jsonFile = new File(RESSOURCES_FOLDER + "jsonDB.json");
+						File jsonFile = new File(RESSOURCES_FOLDER + path);
 						if(!jsonFile.exists()) {
 							out.println("HTTP/1.0 201 Created");
-							out.println("Content-Location:" + jsonFile.getPath());
+							
 							jsonFile.createNewFile();
 						} else {
 							out.println("HTTP/1.0 200 OK");
 						}
+						
+						out.println("Content-Location:" + jsonFile.getPath());
+						out.println("Content-Type: application/json");
+						out.println("Server: Bot");
 						FileWriter writer = new FileWriter(jsonFile, true);
 						writer.write(buf);
 						writer.write(',');
 						writer.close();
 
-
-						out.println("Server: Bot");
 						// this blank line signals the end of the headers
 						out.println("");
-						// Send the HTML page
+						out.println("{ \"success\": true }");
 						out.flush();
 					} else {
 						out.println("HTTP/1.0 415 Unsupported Media Type");
 						out.println("Server: Bot");
+						out.println("Content-Type: application/json");
+
 						// this blank line signals the end of the headers
 						out.println("");
-						// Send the HTML page
+						out.println("{ \"success\": false }");
+						out.flush();
 						out.flush();
 					}
 				}

@@ -63,7 +63,7 @@ public class WebServer {
 					e.printStackTrace();
 				}
 
-				HandleRequest handler = new HandleRequest(str, out, in, socketOutputStream);
+				RequestHandler handler = new RequestHandler(str, out, in, socketOutputStream);
 				handler.handle();
 
 				in.close();
