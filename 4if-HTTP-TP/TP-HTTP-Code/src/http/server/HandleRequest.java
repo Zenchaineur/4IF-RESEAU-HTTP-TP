@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -181,32 +182,66 @@ public class HandleRequest {
 
 		case "POST": {
 			System.out.println("POST called");
-			String str = "";
+			String str = "empty";
+			String contentType = "";
+			int contentLength = -1;
 			try {
-				while(str != null) {
+				while(!str.isBlank()) {
 					str = in.readLine();
-					if(str.startsWith("Content-Length")) {
-						int contentLength = Integer.parseInt(str.split(" ")[1]);
-						System.out.println("Length : " + contentLength);
-						str = in.readLine();
+					System.out.println(str.isBlank());
+
+					if(str.startsWith("Content-Type")) {
+						contentType = str.split(" ")[1];
+					} else if(str.startsWith("Content-Length")) {
+						contentLength = Integer.parseInt(str.split(" ")[1]);
+					}
+				}
+
+				if(contentLength == -1) {
+					out.println("HTTP/1.0 411 Length Required");
+					out.println("Server: Bot");
+					// this blank line signals the end of the headers
+					out.println("");
+					// Send the HTML page
+					out.flush();
+				} else {
+					System.out.println("Length : " + contentLength);
+
+					if(contentType.equals("application/json")) {
+						//str = in.readLine();
+
 						char[] buf = new char[contentLength];
 
 						in.read(buf, 0, contentLength);
 						System.out.println("BUF : " + String.valueOf(buf));
-						out.println("HTTP/1.0 200 OK");
-						out.println("Content-Type: text/plain");
+						
+						File jsonFile = new File("jsonDB.json");
+						if(!jsonFile.exists()) {
+							out.println("HTTP/1.0 201 Created");
+							jsonFile.createNewFile();
+						} else {
+							out.println("HTTP/1.0 200 OK");
+						}
+						FileWriter writer = new FileWriter(jsonFile, true);
+						writer.write(buf);
+						writer.write(',');
+						writer.close();
+
+
 						out.println("Server: Bot");
 						// this blank line signals the end of the headers
 						out.println("");
 						// Send the HTML page
-						out.println("OK");
 						out.flush();
-						str = null;
+					} else {
+						out.println("HTTP/1.0 415 Unsupported Media Type");
+						out.println("Server: Bot");
+						// this blank line signals the end of the headers
+						out.println("");
+						// Send the HTML page
+						out.flush();
 					}
-
-					System.out.println(str);
 				}
-				System.out.println("fini post");
 			} catch (IOException e) {
 				e.printStackTrace();
 
@@ -311,13 +346,11 @@ public class HandleRequest {
 		}
 
 		default:
-			out.println("HTTP/1.0 404 ACTION NOT FOUND");
-			out.println("Content-Type: text/html");
+			out.println("HTTP/1.0 400 BAD REQUEST");
 			out.println("Server: Bot");
 			// this blank line signals the end of the headers
 			out.println("");
 			// Send the HTML page
-			out.println("<H1>ERROR : ACTION NOT FOUND</H1>");
 			out.flush();
 			break;
 		}
