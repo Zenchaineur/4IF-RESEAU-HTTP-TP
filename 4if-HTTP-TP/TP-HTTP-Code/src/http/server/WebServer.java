@@ -17,17 +17,18 @@ import java.net.Socket;
  */
 public class WebServer {
 
+
 	/**
-	 * Methode pour lancer le serveur
+	 * Méthode pour lancer le serveur
 	 */
-	protected void start() {
+	protected void start(String port) {
 		ServerSocket s;
 
-		System.out.println("Webserver starting up on port 3000");
+		System.out.println("Webserver starting up on port " + port);
 		System.out.println("(press ctrl-c to exit)");
 		try {
 			// create the main server socket
-			s = new ServerSocket(3000);
+			s = new ServerSocket( Integer.parseInt(port));
 		} catch (Exception e) {
 			System.out.println("Error: " + e);
 			return;
@@ -78,13 +79,13 @@ public class WebServer {
 	}
 
 	/**
-	 * Start the application.
+	 * Méthode qui démarre l'application
 	 * 
 	 * @param args
 	 *            Command line parameters are not used.
 	 */
 	public static void main(String args[]) {
 		WebServer ws = new WebServer();
-		ws.start();
+		ws.start(args[0]);
 	}
 }

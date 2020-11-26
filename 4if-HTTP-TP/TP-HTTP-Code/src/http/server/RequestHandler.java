@@ -12,7 +12,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 /**
- * Classe permettant de gérer les requetes que le serveur reçoit
+ * Classe permettant de gérer les requêtes que le serveur reçoit
  * @author Binome 1-8
  *
  */
@@ -27,7 +27,7 @@ public class RequestHandler {
 
 	/**
 	 * Constructeur
-	 * @param request Chaine de caractère qui représente la requete reçue
+	 * @param request Chaine de caractères qui représente la requête reçue
 	 * @param out PrintWriter
 	 * @param in BufferedReader
 	 * @param socketOutputStream OutputStream
@@ -40,13 +40,13 @@ public class RequestHandler {
 	}
 
 	/**
-	 * Méthode permettant de gérer la requete reçu
+	 * Méthode permettant de gérer la requête reçue
 	 */
 	public void handle() {
 
 		String[] requestParam = request.split(" ");
 
-		// Type de méthod HTTP
+		// Type de méthode HTTP
 		String action = requestParam[0];
 
 		switch (action) {
@@ -67,6 +67,12 @@ public class RequestHandler {
 			handlePost(requestParam);
 			break;
 		}
+		
+		case "PUT": {
+			handlePut(requestParam);
+			break;
+		}
+		
 		case "HEAD": {
 			handleHead(requestParam);
 			break;
@@ -90,7 +96,7 @@ public class RequestHandler {
 
 	/**
 	 * Permet de gérer une requête GET
-	 * @param requestParam Requete reçu
+	 * @param requestParam Requête reçue
 	 */
 	private void handleGet(String[] requestParam) {
 		String[] pathAndParameters = requestParam[1].split("\\?");
@@ -270,7 +276,7 @@ public class RequestHandler {
 
 	/**
 	 * Permet de gérer une requête POST
-	 * @param requestParam Requete reçu
+	 * @param requestParam Requête reçue
 	 */
 	private void handlePost(String[] requestParam) {
 		String path = requestParam[1];
@@ -350,6 +356,87 @@ public class RequestHandler {
 	}
 	
 	/**
+	 * Permet de gérer une requête PUT
+	 * @param requestParam Requête reçue
+	 */
+	private void handlePut(String[] requestParam) {
+		String path = requestParam[1];
+		System.out.println("PATH " + path);
+
+		System.out.println("PUT called");
+		String str = "empty";
+		String contentType = "";
+		int contentLength = -1;
+		try {
+			while(!str.isBlank() && str != null) {
+				str = in.readLine();
+				System.out.println(str.isBlank());
+
+				if(str.startsWith("Content-Type")) {
+					contentType = str.split(" ")[1];
+				} else if(str.startsWith("Content-Length")) {
+					contentLength = Integer.parseInt(str.split(" ")[1]);
+				}
+			}
+
+			if(contentLength == -1) {
+				out.println("HTTP/1.0 411 Length Required");
+				out.println("Server: Bot");
+				// this blank line signals the end of the headers
+				out.println("");
+				// Send the HTML page
+				out.flush();
+			} else {
+				System.out.println("Length : " + contentLength);
+
+				if(contentType.equals("application/json")) {
+					//str = in.readLine();
+
+					char[] buf = new char[contentLength];
+
+					in.read(buf, 0, contentLength);
+					System.out.println("BUF : " + String.valueOf(buf));
+
+					File jsonFile = new File(RESSOURCES_FOLDER + path);
+					if(!jsonFile.exists()) {
+						out.println("HTTP/1.0 201 Created");
+
+						jsonFile.createNewFile();
+					} else {
+						out.println("HTTP/1.0 200 OK");
+					}
+
+					out.println("Content-Location:" + jsonFile.getPath());
+					out.println("Content-Type: application/json");
+					out.println("Server: Bot");
+					FileWriter writer = new FileWriter(jsonFile);
+					writer.write(buf);
+					writer.write(',');
+					writer.close();
+
+					// this blank line signals the end of the headers
+					out.println("");
+					out.println("{ \"success\": true }");
+					out.flush();
+				} else {
+					out.println("HTTP/1.0 415 Unsupported Media Type");
+					out.println("Server: Bot");
+					out.println("Content-Type: application/json");
+
+					// this blank line signals the end of the headers
+					out.println("");
+					out.println("{ \"success\": false }");
+					out.flush();
+					out.flush();
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+
+		}
+	}
+	
+	/**
 	 * Permet de gérer une requête DELETE
 	 * @param fichier Fichier a supprimer
 	 */
@@ -378,7 +465,7 @@ public class RequestHandler {
 	
 	/**
 	 * Permet de gérer une requête HEAD
-	 * @param requestParam Requete reçu
+	 * @param requestParam Requête reçue
 	 */
 	private void handleHead(String[] requestParam) {
 		System.out.println("HEAD called");
