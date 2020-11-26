@@ -80,6 +80,11 @@ public class RequestHandler {
 			break;
 		}
 
+		case "OPTIONS": {
+			handleOptions(requestParam);
+			break;
+		}
+
 		case "TRACE": {
 			handleTrace();
 			break;
@@ -95,7 +100,43 @@ public class RequestHandler {
 			break;
 		}
 	}
-
+	
+	/**
+	 * Permet de gérer une requête OPTIONS
+	 * @param requestParam Requête reçue
+	 */
+	private void handleOptions(String[] requestParam) {
+		String path = requestParam[1];
+		System.out.println("PATH " + path);
+		System.out.println("OPTIONS called");
+		
+		if(path.substring(1).equals("*")){
+			out.println("HTTP/1.0 200 OK");
+			out.println("Allow : POST, PUT, GET, HEAD, TRACE, DELETE, OPTIONS");
+			out.flush();
+		}
+		else {
+			int extensionIndex = path.lastIndexOf(".");
+			String extension = path.substring(extensionIndex);
+			System.out.println(extension);
+					if (extension.equals(".json")) {
+					out.println("HTTP/1.0 200 OK");
+					out.println("Allow : POST, PUT, GET, DELETE, HEAD, OPTIONS");
+					}
+					else if (extension.equals(".html") || extension.equals(".jpeg") || extension.equals(".png") || extension.equals(".mp4") || extension.equals(".py")) {
+					out.println("HTTP/1.0 200 OK");
+					out.println("Allow : GET, DELETE, HEAD, OPTIONS");	
+					}
+					else {
+						out.println("HTTP/1.0 400 BAD REQUEST");
+					}
+		}
+		out.println("Content-Length : 0");
+		out.println("Server: Bot");
+		out.println("");
+		out.flush();
+	}
+	
 	/**
 	 * Permet de gérer une requête GET
 	 * @param requestParam Requête reçue
