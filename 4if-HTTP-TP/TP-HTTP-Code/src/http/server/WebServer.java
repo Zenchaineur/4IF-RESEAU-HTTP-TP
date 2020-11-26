@@ -58,7 +58,7 @@ public class WebServer {
 
 				try {
 					str = in.readLine();
-					System.out.println("Requete recu : " + str);
+					System.out.println("Requête reçue : " + str);
 				}
 				catch(Exception e) {
 					e.printStackTrace();
