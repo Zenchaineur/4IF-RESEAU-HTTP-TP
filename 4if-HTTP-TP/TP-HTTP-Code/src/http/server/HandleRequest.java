@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -37,7 +38,14 @@ public class HandleRequest {
 		switch (action) {
 		case "GET": {
 			System.out.println("GET called");
-			String path = requestParam[1];
+			String[] pathAndParameters = requestParam[1].split("\\?");
+			String path = pathAndParameters[0];
+			System.out.println("PATH " + path);
+			String parameters = null;
+			if(pathAndParameters.length > 1) {
+				parameters = pathAndParameters[1];
+			}
+			System.out.println("PARAMETERS " + parameters);
 			File fichier = new File(path.substring(1));
 			if(path.equals("/")) {
 				out.println("HTTP/1.0 200 OK");
@@ -115,6 +123,50 @@ public class HandleRequest {
 						e1.printStackTrace();
 
 					}
+				} else if(extension.equalsIgnoreCase(".py")) {
+					out.println("HTTP/1.0 200 OK");
+					out.println("Content-Type: text/plain");
+					//out.println("Content-Length: " + fichier.length());
+					out.println("Server: Bot");
+					// this blank line signals the end of the headers
+					out.println("");
+
+					String s = null;
+					try {
+						String num = "";
+						if(parameters != null) {
+							String[] listParams = parameters.split("&");
+							System.out.println(listParams[0]);
+							for(String param : listParams) {
+								System.out.println("HERE " + param);
+								if(param.contains("number=")) {
+									num = param.split("=")[1];
+								}
+							}
+						}
+						
+						System.out.println("NUM " + num);
+						Process p = Runtime.getRuntime().exec("python script.py " + num);
+						BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+						while((s = stdInput.readLine()) != null) {
+							out.println(s);
+						}
+						while((s = stdError.readLine()) != null) {
+							out.println(s);
+						}
+						//						FileInputStream is = new FileInputStream(fichier);
+						//						byte[] buffer = new byte[(int)fichier.length()];
+						//						is.read(buffer);
+						//
+						//						socketOutputStream.write(buffer);
+						//						socketOutputStream.flush();
+						//						is.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+
+					}
+					out.flush();
 				} else {
 
 					out.println("HTTP/1.0 200 OK");
@@ -186,7 +238,7 @@ public class HandleRequest {
 			String contentType = "";
 			int contentLength = -1;
 			try {
-				while(!str.isBlank()) {
+				while(!str.isBlank() && str != null) {
 					str = in.readLine();
 					System.out.println(str.isBlank());
 
@@ -214,7 +266,7 @@ public class HandleRequest {
 
 						in.read(buf, 0, contentLength);
 						System.out.println("BUF : " + String.valueOf(buf));
-						
+
 						File jsonFile = new File("jsonDB.json");
 						if(!jsonFile.exists()) {
 							out.println("HTTP/1.0 201 Created");
