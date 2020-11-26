@@ -10,29 +10,44 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.Socket;
 
+/**
+ * Classe permettant de gérer les requetes que le serveur reçoit
+ * @author Binome 1-8
+ *
+ */
 public class HandleRequest {
+	private static final String RESSOURCES_FOLDER = "ressources/";
 
-	private Socket remote;
 	private String request;
 	private PrintWriter out;
 	private BufferedReader in;
 	private OutputStream socketOutputStream;
 
 
-	public HandleRequest(Socket remote, String request, PrintWriter out, BufferedReader in, OutputStream socketOutputStream) {
-		this.remote = remote;
+	/**
+	 * Constructeur
+	 * @param remote
+	 * @param request
+	 * @param out
+	 * @param in
+	 * @param socketOutputStream
+	 */
+	public HandleRequest(String request, PrintWriter out, BufferedReader in, OutputStream socketOutputStream) {
 		this.request = request;
 		this.out = out;
 		this.in = in;
 		this.socketOutputStream = socketOutputStream;
 	}
 
+	/**
+	 * Méthode permettant de gérer la requete reçu
+	 */
 	public void handle() {
 
 		String[] requestParam = request.split(" ");
 
+		// Type de méthod HTTP
 		String action = requestParam[0];
 
 		switch (action) {
@@ -46,7 +61,7 @@ public class HandleRequest {
 				parameters = pathAndParameters[1];
 			}
 			System.out.println("PARAMETERS " + parameters);
-			File fichier = new File(path.substring(1));
+			File fichier = new File(RESSOURCES_FOLDER + path.substring(1));
 			if(path.equals("/")) {
 				out.println("HTTP/1.0 200 OK");
 				out.println("Content-Type: text/html");
@@ -146,7 +161,7 @@ public class HandleRequest {
 						}
 						
 						System.out.println("NUM " + num);
-						Process p = Runtime.getRuntime().exec("python script.py " + num);
+						Process p = Runtime.getRuntime().exec("python " + RESSOURCES_FOLDER + "script.py " + num);
 						BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 						BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 						while((s = stdInput.readLine()) != null) {
@@ -176,7 +191,7 @@ public class HandleRequest {
 					out.println("");
 					FileReader lecteurFichier;
 					try {
-						lecteurFichier = new FileReader(fichier);
+						lecteurFichier = new FileReader(RESSOURCES_FOLDER + fichier);
 						BufferedReader lectureFichier = new BufferedReader(lecteurFichier);
 						String line;
 						while(true) {
@@ -208,7 +223,7 @@ public class HandleRequest {
 		case "DELETE": {
 			System.out.println("DELETE called");
 			String path = requestParam[1];
-			File fichier = new File(path.substring(1));
+			File fichier = new File(RESSOURCES_FOLDER + path.substring(1));
 			if(!fichier.exists()) {
 				out.println("HTTP/1.0 404 FILE NOT FOUND");
 				out.println("Content-Type: text/html");
@@ -267,9 +282,10 @@ public class HandleRequest {
 						in.read(buf, 0, contentLength);
 						System.out.println("BUF : " + String.valueOf(buf));
 
-						File jsonFile = new File("jsonDB.json");
+						File jsonFile = new File(RESSOURCES_FOLDER + "jsonDB.json");
 						if(!jsonFile.exists()) {
 							out.println("HTTP/1.0 201 Created");
+							out.println("Content-Location:" + jsonFile.getPath());
 							jsonFile.createNewFile();
 						} else {
 							out.println("HTTP/1.0 200 OK");
@@ -327,7 +343,7 @@ public class HandleRequest {
 		case "HEAD": {
 			System.out.println("HEAD called");
 			String path = requestParam[1];
-			File fichier = new File(path.substring(1));
+			File fichier = new File(RESSOURCES_FOLDER + path.substring(1));
 			if(path.equals("/")) {
 				out.println("HTTP/1.0 200 OK");
 				out.println("Content-Type: text/html");

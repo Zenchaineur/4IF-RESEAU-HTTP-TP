@@ -11,19 +11,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * Example program from Chapter 1 Programming Spiders, Bots and Aggregators in
- * Java Copyright 2001 by Jeff Heaton
- * 
- * WebServer is a very simple web-server. Any request is responded with a very
- * simple web-page.
- * 
- * @author Jeff Heaton
- * @version 1.0
+ * Simple WebServer
+ * @author Binôme 1-8
+ *
  */
 public class WebServer {
 
 	/**
-	 * WebServer constructor.
+	 * Methode pour lancer le serveur
 	 */
 	protected void start() {
 		ServerSocket s;
@@ -61,61 +56,15 @@ public class WebServer {
 				String str = "GET index.html HTTP/1.1";
 
 				try {
-
-					//						System.out.println("str avant readline :");
-
 					str = in.readLine();
-
 					System.out.println("Requete recu : " + str);
-
 				}
 				catch(Exception e) {
 					e.printStackTrace();
 				}
 
-				HandleRequest handler = new HandleRequest(remote, str, out, in, socketOutputStream);
+				HandleRequest handler = new HandleRequest(str, out, in, socketOutputStream);
 				handler.handle();
-				//					String[] requestParam = str.split(" ");
-				//
-				//					String path = requestParam[1];
-				//					File fichier = new File(path.substring(1));
-				//
-				//
-				//					if ( !fichier.exists()) {
-				//						// Send the headers
-				//						out.println("HTTP/1.0 404 FILE NOT FOUND");
-				//						out.println("Content-Type: text/html");
-				//						out.println("Server: Bot");
-				//						// this blank line signals the end of the headers
-				//						out.println("");
-				//						// Send the HTML page
-				//						out.println("<H1>HTTP 404 : FILE NOT FOUND</H2>");
-				//						out.flush();
-				//	//					out.write ("HTTP 404"); // la page demandée n'existe pas
-				//					}
-				//					else {
-				//						// Send the headers
-				//						out.println("HTTP/1.0 200 OK");
-				//						out.println("Content-Type: text/html");
-				//						out.println("Server: Bot");
-				//						// this blank line signals the end of the headers
-				//						out.println("");
-				//						FileReader lecteurFichier = new FileReader(fichier);
-				//						BufferedReader lectureFichier = new BufferedReader(lecteurFichier);
-				//						String line;
-				//						while(true) {
-				//							line = lectureFichier.readLine();
-				//							if (line == null) {
-				//								break;
-				//							}
-				//							System.out.println("line :");
-				//							System.out.println(line);
-				//							out.write(line);
-				//							out.write("\n");
-				//						}
-				//						lectureFichier.close();
-				//						out.flush();
-				//					}
 
 				in.close();
 				out.close();

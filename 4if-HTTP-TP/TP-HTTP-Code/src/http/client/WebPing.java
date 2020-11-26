@@ -8,6 +8,11 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 
+/**
+ * Simple client
+ * @author Binome 1-8
+ *
+ */
 public class WebPing {
 
 
@@ -51,11 +56,6 @@ public class WebPing {
 				//req = null;
 				System.out.println("echo: " + in.readLine());
 			}
-
-
-
-
-
 			sock.close();
 
 		} catch (java.io.IOException e) {
