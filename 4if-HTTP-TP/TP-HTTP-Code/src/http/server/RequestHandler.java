@@ -1,15 +1,21 @@
 package http.server;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+
+import javax.imageio.ImageIO;
 
 /**
  * Classe permettant de gérer les requetes que le serveur reçoit
@@ -23,6 +29,7 @@ public class RequestHandler {
 	private PrintWriter out;
 	private BufferedReader in;
 	private OutputStream socketOutputStream;
+	private InputStream socketInputStream;
 
 
 	/**
@@ -32,10 +39,11 @@ public class RequestHandler {
 	 * @param in BufferedReader
 	 * @param socketOutputStream OutputStream
 	 */
-	public RequestHandler(String request, PrintWriter out, BufferedReader in, OutputStream socketOutputStream) {
+	public RequestHandler(String request, PrintWriter out, BufferedReader in, InputStream socketInputStream, OutputStream socketOutputStream) {
 		this.request = request;
 		this.out = out;
 		this.in = in;
+		this.socketInputStream = socketInputStream;
 		this.socketOutputStream = socketOutputStream;
 	}
 
@@ -287,8 +295,11 @@ public class RequestHandler {
 
 				if(str.startsWith("Content-Type")) {
 					contentType = str.split(" ")[1];
+					System.out.println(contentType);
+
 				} else if(str.startsWith("Content-Length")) {
 					contentLength = Integer.parseInt(str.split(" ")[1]);
+					System.out.println(contentLength);
 				}
 			}
 
@@ -326,6 +337,42 @@ public class RequestHandler {
 					writer.write(buf);
 					writer.write(',');
 					writer.close();
+
+					// this blank line signals the end of the headers
+					out.println("");
+					out.println("{ \"success\": true }");
+					out.flush();
+				} else if(contentType.equals("image/jpeg") || contentType.equals("image/png")) {
+					//str = in.readLine();
+
+					char[] buf = new char[contentLength];
+					byte[] byteBuf = new byte[contentLength];
+
+					//in.read(buf, 0, contentLength);
+//					DataInputStream dip = new DataInputStream(socketInputStream);
+//					dip.read(byteBuf, 0, contentLength);
+					System.out.println(byteBuf.length);
+
+					File newImage = new File(RESSOURCES_FOLDER + path);
+					if(!newImage.exists()) {
+						out.println("HTTP/1.0 201 Created");
+
+						//newImage.createNewFile();
+					} else {
+						out.println("HTTP/1.0 200 OK");
+					}
+
+					out.println("Content-Location:" + newImage.getPath());
+					out.println("Content-Type: application/json");
+					out.println("Server: Bot");
+					System.out.println("here");
+					ByteArrayInputStream bais = new ByteArrayInputStream(byteBuf);
+					System.out.println(bais);
+					BufferedImage img = ImageIO.read(socketInputStream);
+					System.out.println(img);
+					System.out.println("here2");
+
+					ImageIO.write(img, "png", new File(RESSOURCES_FOLDER + path));
 
 					// this blank line signals the end of the headers
 					out.println("");
