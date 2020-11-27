@@ -32,6 +32,7 @@ public class RequestHandler {
 	 * @param out PrintWriter
 	 * @param in BufferedReader
 	 * @param socketOutputStream OutputStream
+	 * @param socketInputStream InputStream
 	 */
 	public RequestHandler(String request, PrintWriter out, BufferedReader in, InputStream socketInputStream, OutputStream socketOutputStream) {
 		this.request = request;
@@ -107,7 +108,6 @@ public class RequestHandler {
 	 */
 	private void handleOptions(String[] requestParam) {
 		String path = requestParam[1];
-		System.out.println("PATH " + path);
 		System.out.println("OPTIONS called");
 		
 		if(path.substring(1).equals("*")){
@@ -118,7 +118,6 @@ public class RequestHandler {
 		else {
 			int extensionIndex = path.lastIndexOf(".");
 			String extension = path.substring(extensionIndex);
-			System.out.println(extension);
 					if (extension.equals(".json")) {
 					out.println("HTTP/1.0 200 OK");
 					out.println("Allow : POST, PUT, GET, DELETE, HEAD, OPTIONS");
@@ -144,12 +143,10 @@ public class RequestHandler {
 	private void handleGet(String[] requestParam) {
 		String[] pathAndParameters = requestParam[1].split("\\?");
 		String path = pathAndParameters[0];
-		System.out.println("PATH " + path);
 		String parameters = null;
 		if(pathAndParameters.length > 1) {
 			parameters = pathAndParameters[1];
 		}
-		System.out.println("PARAMETERS " + parameters);
 		File fichier = new File(RESSOURCES_FOLDER + path.substring(1));
 		if(path.equals("/")) {
 			out.println("HTTP/1.0 200 OK");
@@ -185,7 +182,6 @@ public class RequestHandler {
 			System.out.println("FILE to read : " + fichier.getName());
 			int extensionIndex = fichier.getName().lastIndexOf(".");
 			String extension = fichier.getName().substring(extensionIndex);
-			System.out.println(extension);
 
 			if(extension.equalsIgnoreCase(".png") || extension.equalsIgnoreCase(".jpg")) {
 				out.println("HTTP/1.0 200 OK");
@@ -278,9 +274,7 @@ public class RequestHandler {
 					String num = "";
 					if(parameters != null) {
 						String[] listParams = parameters.split("&");
-						System.out.println(listParams[0]);
 						for(String param : listParams) {
-							System.out.println("HERE " + param);
 							if(param.contains("number=")) {
 								num = param.split("=")[1];
 							}
@@ -353,7 +347,6 @@ public class RequestHandler {
 	 */
 	private void handlePost(String[] requestParam) {
 		String path = requestParam[1];
-		System.out.println("PATH " + path);
 
 		System.out.println("POST called");
 		String str = "empty";
@@ -364,15 +357,12 @@ public class RequestHandler {
 		try {
 			while(!str.isBlank() && str != null) {
 				str = in.readLine();
-				System.out.println(str.isBlank());
 
 				if(str.startsWith("Content-Type")) {
 					contentType = str.split(" ")[1];
-					System.out.println(contentType);
 
 				} else if(str.startsWith("Content-Length")) {
 					contentLength = Integer.parseInt(str.split(" ")[1]);
-					System.out.println(contentLength);
 				}
 			}
 
@@ -384,7 +374,6 @@ public class RequestHandler {
 				// Send the HTML page
 				out.flush();
 			} else {
-				System.out.println("Length : " + contentLength);
 
 				if(contentType.equals("application/json")) {
 					//str = in.readLine();
@@ -392,7 +381,6 @@ public class RequestHandler {
 					char[] buf = new char[contentLength];
 
 					in.read(buf, 0, contentLength);
-					System.out.println("BUF : " + String.valueOf(buf));
 
 					File jsonFile = new File(RESSOURCES_FOLDER + path);
 					if(!jsonFile.exists()) {
@@ -438,7 +426,6 @@ public class RequestHandler {
 	 */
 	private void handlePut(String[] requestParam) {
 		String path = requestParam[1];
-		System.out.println("PATH " + path);
 
 		System.out.println("PUT called");
 		String str = "empty";
@@ -447,7 +434,6 @@ public class RequestHandler {
 		try {
 			while(!str.isBlank() && str != null) {
 				str = in.readLine();
-				System.out.println(str.isBlank());
 
 				if(str.startsWith("Content-Type")) {
 					contentType = str.split(" ")[1];
@@ -464,15 +450,12 @@ public class RequestHandler {
 				// Send the HTML page
 				out.flush();
 			} else {
-				System.out.println("Length : " + contentLength);
-
 				if(contentType.equals("application/json")) {
 					//str = in.readLine();
 
 					char[] buf = new char[contentLength];
 
 					in.read(buf, 0, contentLength);
-					System.out.println("BUF : " + String.valueOf(buf));
 
 					File jsonFile = new File(RESSOURCES_FOLDER + path);
 					if(!jsonFile.exists()) {
